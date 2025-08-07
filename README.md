@@ -36,6 +36,7 @@ Ensure you have the following installed:
     ```
 1. Create a virtual environment and install the packages in requirements.txt. On Visual Studio Code, this can be done easily by opening command palette (`Ctrl+Shift+P` / `Cmd+Shift+P`), searching for **Python: Create Environment**, and selecting **Venv**
 1. In the root directory, activate the virtual environment
+   
     **macOS/Linux:**
     ```bash
     source .venv/bin/activate
