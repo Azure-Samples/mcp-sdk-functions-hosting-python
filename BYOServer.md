@@ -72,7 +72,7 @@ Try out the experimental [Azure Functions MCP server deployment helper](https://
     mcp_port = int(os.environ.get("FUNCTIONS_CUSTOMHANDLER_PORT", 8080))
     mcp = FastMCP("weather", stateless_http=True, port=mcp_port)
     ```
-1. A `requirements.txt` is required at the moment. Make sure there is one is the root directory with the following:
+1. A `requirements.txt` is required today. Make sure there is one is the root directory with the following:
     ```txt
     httpx
     mcp[cli]>=1.5.0
@@ -83,6 +83,7 @@ That's it! You're ready to run your MCP server locally and deploy to Azure Funct
 ## Run the server locally
 1. Create a virtual environment and install the packages in `requirements.txt`. On Visual Studio Code, this can be done easily by opening command palette (`Ctrl+Shift+P` / `Cmd+Shift+P`), searching for **Python: Create Environment**, and selecting **Venv**
 1. In the root directory, activate the virtual environment
+   
     **macOS/Linux:**
     ```bash
     source .venv/bin/activate
