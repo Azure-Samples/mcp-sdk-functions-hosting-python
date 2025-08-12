@@ -1,8 +1,9 @@
-from typing import Any
-import httpx
-import sys
-from mcp.server.fastmcp import FastMCP
 import os
+import sys
+from typing import Any
+
+import httpx
+from mcp.server.fastmcp import FastMCP
 
 # Initialize FastMCP server
 
@@ -14,12 +15,10 @@ mcp = FastMCP("weather", stateless_http=True, port=mcp_port)
 NWS_API_BASE = "https://api.weather.gov"
 USER_AGENT = "weather-app/1.0"
 
+
 async def make_nws_request(url: str) -> dict[str, Any] | None:
     """Make a request to the NWS API with proper error handling."""
-    headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/geo+json"
-    }
+    headers = {"User-Agent": USER_AGENT, "Accept": "application/geo+json"}
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, headers=headers, timeout=30.0)
@@ -27,6 +26,7 @@ async def make_nws_request(url: str) -> dict[str, Any] | None:
             return response.json()
         except Exception:
             return None
+
 
 def format_alert(feature: dict) -> str:
     """Format an alert feature into a readable string."""
@@ -38,6 +38,7 @@ Severity: {props.get('severity', 'Unknown')}
 Description: {props.get('description', 'No description available')}
 Instructions: {props.get('instruction', 'No specific instructions provided')}
 """
+
 
 @mcp.tool()
 async def get_alerts(state: str) -> str:
@@ -57,6 +58,7 @@ async def get_alerts(state: str) -> str:
 
     alerts = [format_alert(feature) for feature in data["features"]]
     return "\n---\n".join(alerts)
+
 
 @mcp.tool()
 async def get_forecast(latitude: float, longitude: float) -> str:
@@ -94,10 +96,11 @@ Forecast: {period['detailedForecast']}
 
     return "\n---\n".join(forecasts)
 
+
 if __name__ == "__main__":
     try:
         # Initialize and run the server
-        print(f"Starting MCP server...")
+        print("Starting MCP server...")
         mcp.run(transport="streamable-http")
     except Exception as e:
         print(f"Error while running MCP server: {e}", file=sys.stderr)

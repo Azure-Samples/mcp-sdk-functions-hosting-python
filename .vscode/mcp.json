@@ -1,4 +1,18 @@
 {
+	"inputs": [
+		{
+		"type": "promptString",
+		"id": "functions-key",
+		"description": "Functions App Key",
+		"password": true
+		},
+		{
+		"type": "promptString",
+		"id": "functions-name",
+		"description": "Functions App Name",
+		"password": false
+		}
+	],
 	"servers": {
 		"local-mcp-server": {
 			"url": "http://0.0.0.0:7071/mcp",
@@ -6,11 +20,10 @@
 		},
 		"remote-mcp-server": {
             "type": "http",
-            "url": "https://{functionapp-name}.azurewebsites.net/mcp",
+            "url": "https://${input:functions-name}.azurewebsites.net/mcp",
             "headers": {
-                "x-functions-key": "{access key}"
+                "x-functions-key": "${input:functions-key}"
             }
         }
-	},
-	"inputs": []
+	}
 }
