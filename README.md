@@ -56,7 +56,7 @@ Ensure you have the following installed:
 
 1. Run `func start`
 1. Open _mcp.json_ (in the _vscode_ directory)
-1. Start the server by selecting the _Start_ button above the **local-mcp-server** 
+1. Start the server by selecting the _Start_ button above the **local-mcp-server**
 1. Click on the Copilot icon at the top to open chat, and then change to _Agent_ mode in the question window.
 1. Ask "What is the weather in NYC?" Copilot should call one of the weather tools to help answer this question.
 
@@ -82,13 +82,14 @@ When the command finishes, your terminal will display output similar to the foll
 
 ## Server authorization using Azure API Management (APIM)
 
-In addition to protecting server access through function keys, you can also add APIM in front of the Function app to add an extra layer of security. This sample leverages APIM's policy feature to redirect a client to authenticate with Entra ID before connecting to the MCP server. Specifically, this is achieved by creating two policies on the APIM resource. One policy checks access tokens from incoming requests, and if validation fails, returns a 404 with header containining the path to Protected Resource Metadata (PRM). Another policy returns the PRM, which a client can use to figure out the authorization server (Entra ID in this case) that provides access tokens to the MCP server. 
+In addition to protecting server access through function keys, you can also add APIM in front of the Function app to add an extra layer of security. This sample leverages APIM's policy feature to redirect a client to authenticate with Entra ID before connecting to the MCP server. Specifically, this is achieved by creating two policies on the APIM resource. One policy checks access tokens from incoming requests, and if validation fails, returns a 404 with header containining the path to Protected Resource Metadata (PRM). Another policy returns the PRM, which a client can use to figure out the authorization server (Entra ID in this case) that provides access tokens to the MCP server.
 
-To see the above in action, test connecting to the server using the APIM endpoint instead of the Function app endpoint: 
+To see the above in action, test connecting to the server using the APIM endpoint instead of the Function app endpoint:
+
 1. Stop the **remote-mcp-server** from previous
 1. Start the **remote-mcp-server-apim** server
 1. VS Code will prompt you for the APIM resource name
-1. Click **Allow** when a window pops up saying the MCP Server wants to authenticate to Microsoft. 
+1. Click **Allow** when a window pops up saying the MCP Server wants to authenticate to Microsoft.
 1. Sign into your Microsoft account to connect to the server  
 
 ## Next steps
