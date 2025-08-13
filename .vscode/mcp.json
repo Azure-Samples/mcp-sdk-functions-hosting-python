@@ -1,29 +1,39 @@
 {
-	"inputs": [
-		{
-		"type": "promptString",
-		"id": "functions-key",
-		"description": "Functions App Key",
-		"password": true
-		},
-		{
-		"type": "promptString",
-		"id": "functions-name",
-		"description": "Functions App Name",
-		"password": false
-		}
-	],
 	"servers": {
 		"local-mcp-server": {
-			"url": "http://0.0.0.0:7071/mcp",
+			"url": "http://localhost:7071/mcp",
 			"type": "http"
 		},
 		"remote-mcp-server": {
-            "type": "http",
-            "url": "https://${input:functions-name}.azurewebsites.net/mcp",
-            "headers": {
-                "x-functions-key": "${input:functions-key}"
-            }
-        }
-	}
+			"type": "http",
+			"url": "https://${input:functions-name}.azurewebsites.net/mcp",
+			"headers": {
+				"x-functions-key": "${input:functions-key}"
+			}
+		},
+		"remote-mcp-server-apim": {
+			"url": "https://${input:apim-name}.azure-api.net/mcp",
+			"type": "http"
+		}
+	},
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "functions-key",
+			"description": "Functions App Key",
+			"password": true
+		},
+		{
+			"type": "promptString",
+			"id": "functions-name",
+			"description": "Functions App Name",
+			"password": false
+		},
+		{
+			"type": "promptString",
+			"id": "apim-name",
+			"description": "API Management Name",
+			"password": false
+		}
+	]
 }
