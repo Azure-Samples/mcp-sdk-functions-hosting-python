@@ -82,12 +82,12 @@ When the command finishes, your terminal will display output similar to the foll
 
 ## Server authorization using Azure API Management (APIM)
 
-In addition to protecting server access through function keys, you can also add APIM in front of the Function app to add an extra layer of security. This sample leverages APIM's policy feature to redirect a client to authenticate with Entra ID before connecting to the MCP server. Specifically, an APIM resource with two policies is created. One policy checks access tokens from incoming requests and returns a header with the Protected Resource Metadata (PRM) path if validation fails. Another policy returns the PRM information, which a client can use to figure out the authorization server that provides access tokens to the server. 
+In addition to protecting server access through function keys, you can also add APIM in front of the Function app to add an extra layer of security. This sample leverages APIM's policy feature to redirect a client to authenticate with Entra ID before connecting to the MCP server. Specifically, this is achieved by creating two policies on the APIM resource. One policy checks access tokens from incoming requests, and if validation fails, returns a 404 with header containining the path to Protected Resource Metadata (PRM). Another policy returns the PRM, which a client can use to figure out the authorization server (Entra ID in this case) that provides access tokens to the MCP server. 
 
 To see the above in action, test connecting to the server using the APIM endpoint instead of the Function app endpoint: 
 1. Stop the **remote-mcp-server** from previous
 1. Start the **remote-mcp-server-apim** server
-1. VS Code will prompt you for the APIM name
+1. VS Code will prompt you for the APIM resource name
 1. Click **Allow** when a window pops up saying the MCP Server wants to authenticate to Microsoft. 
 1. Sign into your Microsoft account to connect to the server  
 
