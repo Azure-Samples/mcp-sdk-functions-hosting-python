@@ -154,4 +154,3 @@ resource mcpPrmPolicy 'Microsoft.ApiManagement/service/apis/operations/policies@
 output apiId string = mcpApi.id
 output mcpAppId string = mcpAppId
 output mcpAppTenantId string = mcpAppTenantId
-output functionkey string = listKeys('${functionApp.id}/host/default', functionApp.apiVersion).masterKey
