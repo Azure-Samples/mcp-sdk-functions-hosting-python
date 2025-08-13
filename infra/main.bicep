@@ -58,6 +58,9 @@ param storageAccountName string = ''
 param vNetName string = ''
 @description('Id of the user identity to be used for testing and debugging. This is not required in production. Leave empty if not needed.')
 param principalId string = ''
+param mcpEntraApplicationUniqueName string = ''
+param mcpEntraApplicationDisplayName string = ''
+
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -72,6 +75,18 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
+var apimResourceToken = toLower(uniqueString(subscription().id, resourceGroupName, environmentName, location))
+var apiManagementName = '${abbrs.apiManagementService}${apimResourceToken}'
+
+// apim service deployment
+module apimService './apim/apim.bicep' = {
+  name: apiManagementName
+  scope: rg
+  params:{
+    apiManagementName: apiManagementName
+  }
+}
+
 // User assigned managed identity to be used by the function app to reach storage and other dependencies
 // Assign specific roles to this identity in the RBAC module
 module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.4.1' = {
@@ -82,6 +97,34 @@ module apiUserAssignedIdentity 'br/public:avm/res/managed-identity/user-assigned
     tags: tags
     name: !empty(apiUserAssignedIdentityName) ? apiUserAssignedIdentityName : '${abbrs.managedIdentityUserAssignedIdentities}api-${resourceToken}'
   }
+}
+
+// MCP Entra App - moved from mcp-api.bicep to avoid circular dependency
+module mcpEntraApp './app/apim-mcp/mcp-entra-app.bicep' = {
+  name: 'mcpEntraAppDeployment'
+  scope: rg
+  params: {
+    mcpAppUniqueName: !empty(mcpEntraApplicationUniqueName) ? mcpEntraApplicationUniqueName : 'mcp-api-${apimResourceToken}'
+    mcpAppDisplayName: !empty(mcpEntraApplicationDisplayName) ? mcpEntraApplicationDisplayName : 'MCP-API-${apimResourceToken}'
+    userAssignedIdentityPrincipleId: apiUserAssignedIdentity.outputs.principalId 
+    functionAppName: functionAppName
+  }
+}
+
+// MCP server API endpoints
+module mcpApiModule './app/apim-mcp/mcp-api.bicep' = {
+  name: 'mcpApiModule'
+  scope: rg
+  params: {
+    apimServiceName: apimService.name
+    functionAppName: functionAppName
+    mcpAppId: mcpEntraApp.outputs.mcpAppId
+    mcpAppTenantId: mcpEntraApp.outputs.mcpAppTenantId
+  }
+  dependsOn: [
+    appServicePlan
+    api
+  ]
 }
 
 // Create an App Service Plan to group applications under the same payment plan and SKU
