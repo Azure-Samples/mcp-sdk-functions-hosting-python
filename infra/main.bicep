@@ -124,6 +124,7 @@ module mcpApiModule './app/apim-mcp/mcp-api.bicep' = {
   dependsOn: [
     appServicePlan
     api
+    storagePrivateEndpoint
   ]
 }
 
