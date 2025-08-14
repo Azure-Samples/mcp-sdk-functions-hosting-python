@@ -33,7 +33,7 @@ resource msGraphSP 'Microsoft.Graph/servicePrincipals@v1.0' existing = {
 
 var graphScopes = msGraphSP.oauth2PermissionScopes
 
-var permissionId = guid(mcpAppUniqueName, 'user_impersonation')
+var permissionId = guid(mcpAppUniqueName, 'user_impersonate')
 resource mcpEntraApp 'Microsoft.Graph/applications@v1.0' = {
   displayName: mcpAppDisplayName
   uniqueName: mcpAppUniqueName
@@ -47,7 +47,7 @@ resource mcpEntraApp 'Microsoft.Graph/applications@v1.0' = {
         type: 'User'
         userConsentDescription: 'Allows the app to access MCP resources on your behalf'
         userConsentDisplayName: 'Access MCP resources'
-        value: 'user_impersonation'
+        value: 'user_impersonate'
       }
     ]
     requestedAccessTokenVersion: 2
@@ -55,7 +55,7 @@ resource mcpEntraApp 'Microsoft.Graph/applications@v1.0' = {
       {
         appId: 'aebc6443-996d-45c2-90f0-388ff96faa56'
         delegatedPermissionIds: [
-          guid(mcpAppUniqueName, 'user_impersonation')
+          guid(mcpAppUniqueName, 'user_impersonate')
         ]
       }
     ]
