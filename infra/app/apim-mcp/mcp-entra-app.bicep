@@ -15,16 +15,32 @@ param userAssignedIdentityPrincipleId string
 @description('The web app name for callback URL configuration')
 param functionAppName string
 
+@description('Provide an array of Microsoft Graph scopes like "User.Read"')
+param appScopes array = ['User.Read']
+
 var loginEndpoint = environment().authentication.loginEndpoint
 var issuer = '${loginEndpoint}${tenantId}/v2.0'
 
+// Microsoft Graph app ID
+var graphAppId = '00000003-0000-0000-c000-000000000000'
+var msGraphAppId = graphAppId
+
+// Get the Microsoft Graph service principal so that the scope names
+// can be looked up and mapped to a permission ID
+resource msGraphSP 'Microsoft.Graph/servicePrincipals@v1.0' existing = {
+  appId: graphAppId
+}
+
+var graphScopes = msGraphSP.oauth2PermissionScopes
+
+var permissionId = guid(mcpAppUniqueName, 'user_impersonate')
 resource mcpEntraApp 'Microsoft.Graph/applications@v1.0' = {
   displayName: mcpAppDisplayName
   uniqueName: mcpAppUniqueName
   api: {
     oauth2PermissionScopes: [
       {
-        id: guid(mcpAppUniqueName, 'user_impersonate')
+        id: permissionId
         adminConsentDescription: 'Allows the application to access MCP resources on behalf of the signed-in user'
         adminConsentDisplayName: 'Access MCP resources'
         isEnabled: true
@@ -44,12 +60,13 @@ resource mcpEntraApp 'Microsoft.Graph/applications@v1.0' = {
       }
     ]
   }
+  // Parameterized Microsoft Graph delegated scopes based on appScopes
   requiredResourceAccess: [
     {
-      resourceAppId: '00000003-0000-0000-c000-000000000000' // Microsoft Graph
+      resourceAppId: msGraphAppId // Microsoft Graph
       resourceAccess: [
-        {
-          id: 'e1fe6dd8-ba31-4d61-89e7-88639da4683d' // User.Read
+        for (scope, i) in appScopes: {
+          id: filter(graphScopes, graphScopes => graphScopes.value == scope)[0].id
           type: 'Scope'
         }
       ]

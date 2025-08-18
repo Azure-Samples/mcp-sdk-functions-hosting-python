@@ -68,7 +68,7 @@ module api 'br/public:avm/res/web/site:0.15.1' = {
     kind: kind
     name: name
     location: location
-    tags: union(tags, { 'azd-service-name': serviceName })
+    tags: union(tags, { 'azd-service-name': serviceName})
     serverFarmResourceId: appServicePlanId
     managedIdentities: {
       systemAssigned: identityType == 'SystemAssigned'

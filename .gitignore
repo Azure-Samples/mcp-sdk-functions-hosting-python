@@ -408,3 +408,5 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+.DS_Store
