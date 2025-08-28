@@ -1,4 +1,4 @@
-# Host bring-your-own (BYO) MCP servers on Azure Functions
+# Host your existing MCP server on Azure Functions
 If you have already have a server built with [Anthropic's MCP SDKs](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#model-context-protocol-servers), this document provides guidance on how to prepare the MCP server for deployment as a custom handler on Azure Functions. Only **stateless** servers that use the **streamable http** transport are supported at the moment.  
 
 ## Prerequisites

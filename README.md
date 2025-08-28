@@ -37,6 +37,9 @@ Ensure you have the following installed:
 * [Visual Studio Code](https://code.visualstudio.com/)
 * [Azure Functions extension on Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
 
+>[!NOTE]
+>The instructions below demonstrate hosting Anthropic's sample *weather* server on Azure Functions. If you have an existing MCP server that you want to host instead, follow instructions in the article for [hosting an existing server](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-python/blob/main/ExistingServer.md).
+
 ### Run the server locally
 
 1. Clone the repo and open the sample in Visual Studio Code
@@ -68,7 +71,17 @@ Ensure you have the following installed:
 
 ### Deploy
 
-In the root directory, and run `azd up`. This command will create and deploy the app, plus other required resources.
+Before deploying, you need to register the `Microsoft.App` resource provider:
+```shell
+az provider register --namespace 'Microsoft.App'
+```
+
+Wait a few seconds for registration to complete. You can check status by using:
+```shell
+az provider show -n Microsoft.App
+```
+
+Once registration state becomes "Registered", run `azd up` in the root directory. This command will create and deploy the app, plus other required resources.
 
 When the command finishes, your terminal will display output similar to the following:
 
@@ -106,6 +119,14 @@ To see the above in action, test connecting to the server using the APIM endpoin
 
 Since Entra ID doesn't provide native support for DCR (Dynamic Client Registration) and PKCE (Proof Key for Code Exchange) today,the above authorization flow is only supported on VS Code. If you use other clients (like Claude or Cursor), the easier option is to access the MCP server using the Function App endpoint and access key. The other option is to try out an [experimental approach](https://github.com/localden/remote-auth-mcp-apim-py/) that provides a workaround, which also leverages APIM.
 
+## Clean up resources
+
+When you're done working with your server, you can use this command to delete the resources created on Azure and avoid incurring any further costs:
+
+  ```shell
+  azd down
+  ```
+
 ## Next steps
 
 ### Find this sample in other languages
@@ -115,6 +136,50 @@ Since Entra ID doesn't provide native support for DCR (Dynamic Client Registrati
 | C# (.NET) | [mcp-sdk-functions-hosting-dotnet](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-dotnet) |
 | Node | [mcp-sdk-functions-hosting-node](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-node) |
 
-### Bring-your-own MCP server
 
-If you've already built an MCP server, follow the instructions in the document [Host bring-your-own (BYO) MCP servers on Azure Functions](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-python/blob/main/BYOServer.md).
+## Troubleshooting 
+The following are some common issues that come up. 
+
+1. **InternalServerError: There was an unexpected InternalServerError. Please try again later.**
+
+    Check if you have registered the `Microsoft.App` resource provider:
+
+    ```shell
+    az provider show -n Microsoft.App
+    ```
+
+    If it's showing up as unregistered, register it:
+    ```shell
+    az provider register --namespace 'Microsoft.App'
+    ```
+
+    Successful registration should show:
+    ```shell
+    Namespace      RegistrationPolicy    RegistrationState
+    -------------  --------------------  -------------------
+    Microsoft.App  RegistrationRequired  Registered
+    ```
+
+    Then run `azd up` again. 
+
+2. **Error: error executing step command 'deploy --all': getting target resource: resource not found: unable to find a resource tagged with 'azd-server-name: api'. Ensure the service resource is corrected tagged in your infrastructure configuration, and rerun provision**
+
+    This is a [known transient error](https://github.com/Azure/azure-dev/issues/5580). Try re-running `azd up`. 
+
+3. **Selected user account does not exist in tenant '{name}' and cannot access the application '{app ID}' in that tenant. The account needs to be added as an external user in the tenant first.**
+
+    When authenticating to the server using the APIM endpoint, you must log with the email associated with the Azure account and subscription in which your resources are deployed. 
+
+4. **[warning] Error populating auth metadata: Error: Failed to fetch authorization server metadata: 401**
+
+    Ensure the Function app access key is correct when connecting to the server with the app endpoint.
+
+5. **Connection state: Error Error sending message to {endpoint}: TypeError: fetch failed**
+    
+    - Ensure the Function app name is correct when connecting to the server with the app endpoint.
+    - Ensure the APIM resource name is correct when connecting to the server with the APIM endpoint.
+
+
+
+
+
