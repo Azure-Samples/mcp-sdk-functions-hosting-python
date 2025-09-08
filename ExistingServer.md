@@ -77,8 +77,8 @@ Try out the experimental [Azure Functions MCP server deployment helper](https://
     httpx
     mcp[cli]>=1.5.0
     ```
->![IMPORTANT]
->You must use `requirements.txt` today, as `pyproject.toml` is **not** yet supported. 
+> [!IMPORTANT]
+> You must use `requirements.txt` today, as `pyproject.toml` is **not** yet supported. 
 
 That's it! You're ready to run your MCP server locally and deploy to Azure Functions as a custom handler. 
 
