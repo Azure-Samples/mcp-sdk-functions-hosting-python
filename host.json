@@ -12,6 +12,6 @@
             "arguments": ["weather.py"]
         },
         "enableForwardingHttpRequest": true,
-        "enableHttpProxyingRequest": true
+        "enableProxyingHttpRequest": true
     }
 }
