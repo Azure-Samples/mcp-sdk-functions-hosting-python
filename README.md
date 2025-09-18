@@ -68,6 +68,7 @@ Ensure you have the following installed:
 1. Start the server by selecting the _Start_ button above the **local-mcp-server**
 1. Click on the Copilot icon at the top to open chat, and then change to _Agent_ mode in the question window.
 1. Ask "What is the weather in NYC?" Copilot should call one of the weather tools to help answer this question.
+1. Deactivate the virtual environment
 
 ### Deploy
 
@@ -179,7 +180,9 @@ The following are some common issues that come up.
     - Ensure the Function app name is correct when connecting to the server with the app endpoint.
     - Ensure the APIM resource name is correct when connecting to the server with the APIM endpoint.
 
-
+6. **Ensure you have the latest version of Azure Functions Core Tools installed.**
+   
+    - You need [version >=4.2.1](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
 
 
 
