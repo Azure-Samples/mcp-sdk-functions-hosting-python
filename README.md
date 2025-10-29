@@ -43,7 +43,7 @@ Ensure you have the following:
 
 Follow these instructions to scaffold your project: 
 
-1. In your MCP project, run `azd init --template self-hosted-mcp-python-scaffold`
+1. In your MCP project, run `azd init --template mcp-python-scaffold`
 1. [TODO]
 1. In `host.json`, put the main Python script path as the value of `arguments`. 
 
