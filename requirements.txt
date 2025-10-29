@@ -1,2 +1,0 @@
-httpx
-mcp[cli]>=1.5.0

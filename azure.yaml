@@ -4,7 +4,7 @@ name: python-mcp-sdk-functions-azd
 metadata:
   template: python-mcp-sdk-functions-azd@1.0.0
 services:
-  api:
+  mcp:
     project: .
     language: python
     host: function

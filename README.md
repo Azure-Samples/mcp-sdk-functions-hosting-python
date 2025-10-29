@@ -12,7 +12,7 @@ This repo contains instructions and sample for running MCP server built with the
 
 Recently Azure Functions released the [Functions MCP extension](https://techcommunity.microsoft.com/blog/appsonazureblog/build-ai-agent-tools-using-remote-mcp-with-azure-functions/4401059), allowing developers to build MCP servers using Functions programming model, which is essentially Function's event-driven framework, and host them remotely on the serverless platform.
 
-For those who have already built servers with [Anthropic's MCP SDKs](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#model-context-protocol-servers), it's also possible to host the servers on Azure Functions by running them as _custom handlers_, which are lightweight web servers that receive events from the Functions host. They allow you to host your already-built MCP servers with minimal code change and benefit from Function's bursty scale, serverless pricing model, and security features.
+For those who have already built servers with [Anthropic's MCP SDKs](https://github.com/modelcontextprotocol/servers?tab=readme-ov-file#model-context-protocol-servers), it's also possible to host the servers on Azure Functions by running them as _custom handlers_, which are lightweight web servers that receive events from the Functions host. They allow you to host your already-built MCP servers with no code changes and benefit from Function's bursty scale, serverless pricing model, and security features.
 
 This repo focuses on the second hosting scenario:  
 
@@ -28,19 +28,28 @@ More generally speaking, you can leverage custom handlers to host apps built wit
 
 ## Prerequisites
 
-You'll need an [Azure subscription](../guides/developer/azure-developer-guide.md#understanding-accounts-subscriptions-and-billing). If you don't already have an account, [create a free one](https://azure.microsoft.com/free/dotnet/) before you begin.
+Ensure you have the following:
 
-Ensure you have the following installed:
-
+* [Azure subscription](../guides/developer/azure-developer-guide.md#understanding-accounts-subscriptions-and-billing) ([create a free one](https://azure.microsoft.com/free/dotnet/))
 * [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
 * [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript)
 * [Visual Studio Code](https://code.visualstudio.com/)
 * [Azure Functions extension on Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
 
->[!NOTE]
->The instructions below demonstrate hosting Anthropic's sample *weather* server on Azure Functions. If you have an existing MCP server that you want to host instead, follow instructions in the article for [hosting an existing server](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-python/blob/main/ExistingServer.md).
+>[!IMPORTANT]
+>This sample requires that you have permission to create a [Microsoft Entra app](https://docs.azure.cn/entra/fundamentals/what-is-entra) in the Azure subscription you use. 
 
-### Run the server locally
+## If you already have an existing server... 
+
+Follow these instructions to scaffold your project: 
+
+1. In your MCP project, run `azd init --template self-hosted-mcp-python-scaffold`
+1. [TODO]
+1. In `host.json`, put the main Python script path as the value of `arguments`. 
+
+Once you're done with the above, continue from the [Run the server locally](#run-the-server-locally) section. 
+
+## If you're starting from scratch...
 
 1. Clone the repo and open the sample in Visual Studio Code
 
@@ -48,29 +57,18 @@ Ensure you have the following installed:
     git clone https://github.com/Azure-Samples/mcp-sdk-functions-hosting-python.git
     ```
 
-1. Create a virtual environment and install the packages in requirements.txt. On Visual Studio Code, this can be done easily by opening command palette (`Ctrl+Shift+P` / `Cmd+Shift+P`), searching for **Python: Create Environment**, and selecting **Venv**
-1. In the root directory, activate the virtual environment
+## Run the server locally
 
-    **macOS/Linux:**
-
-    ```bash
-    source .venv/bin/activate
-    ```
-
-   **Windows Command Prompt:**
-  
-   ```cmd
-   .venv\Scripts\activate.bat
-   ```
-
-1. Run `func start`
-1. Open _mcp.json_ (in the _vscode_ directory)
+1. In the root directory, run `uv run func start` to create the virtual environment, install dependencies, and start the server locally
+1. Open _mcp.json_ (in the _.vscode_ directory)
 1. Start the server by selecting the _Start_ button above the **local-mcp-server**
-1. Click on the Copilot icon at the top to open chat, and then change to _Agent_ mode in the question window.
-1. Ask "What is the weather in NYC?" Copilot should call one of the weather tools to help answer this question.
+1. Click on the Copilot icon at the top to open chat (or `Ctrl+Command+I / Ctrl+Alt+I`), and then change to _Agent_ mode in the question window.
+1. Click the tools icon and make sure **local-mcp-server** is checked for Copilot to use in the chat: 
+  <img src="./media/mcp-tools.png" width="200" alt="MCP tools list screenshot">>
+1. Once the server displays the number of tools available, ask "What is the weather in NYC?" Copilot should call one of the weather tools to help answer this question.
 1. Deactivate the virtual environment
 
-### Deploy
+### Register resource provider before deploying
 
 Before deploying, you need to register the `Microsoft.App` resource provider:
 ```shell
@@ -82,43 +80,68 @@ Wait a few seconds for registration to complete. You can check status by using:
 az provider show -n Microsoft.App
 ```
 
-Once registration state becomes "Registered", run `azd up` in the root directory. This command will create and deploy the app, plus other required resources.
+### Deployment 
 
-When the command finishes, your terminal will display output similar to the following:
+1. This sample uses Visual Studio Code as the main client. Configure it as an allowed client application:
+    ```shell
+    azd env set PRE_AUTHORIZED_CLIENT_IDS aebc6443-996d-45c2-90f0-388ff96faa56
+    ```
 
-  ```shell
-  (✓) Done: Deploying service api
-  - Endpoint: https://{functionapp-name}.azurewebsites.net/
-  ```
+1. Specify a service management reference if required by your organization. If you're not a Microsoft employee and don't know that you need to set this, you can skip this step. However, if provisioning fails with an error about a missing service management reference, you may need to revisit this step. Microsoft employees using a Microsoft tenant must provide a service management reference (your Service Tree ID). Without this, you won't be able to create the Entra app registration, and provisioning will fail.
+    ```shell
+    azd env set SERVICE_MANAGEMENT_REFERENCE <service-management-reference>
+    ```
+
+1. Run `azd up` in the root directory. This command will create and deploy the app, plus other required resources.
+
+    When the deployment finishes, your terminal will display output similar to the following:
+
+    ```shell
+      (✓) Done: Resource group: rg-resource-group-name (12.061s)
+      (✓) Done: App Service plan: plan-random-guid (6.748s)
+      (✓) Done: Virtual Network: vnet-random-guid (8.566s)
+      (✓) Done: Log Analytics workspace: log-random-guid (29.422s)
+      (✓) Done: Storage account: strandomguid (34.527s)
+      (✓) Done: Application Insights: appi-random-guid (8.625s)
+      (✓) Done: Function App: func-mcp-random-guid (36.096s)
+      (✓) Done: Private Endpoint: blob-private-endpoint (30.67s)
+
+      Deploying services (azd deploy)
+      (✓) Done: Deploying service api
+      - Endpoint: https://functionapp-name.azurewebsites.net/
+    ```
 
 ### Connect to server on Visual Studio Code
 
-1. After deployment completes, navigate to the Function App resource in the Azure portal, as you will need the key from there.
 1. Open _mcp.json_ in VS Code.
-1. Stop the local server by selecting the _Stop_ button above the **local-mcp-server**
-1. Start the remote server by selecting the _Start_ button above the **remote-mcp-server**
+1. Stop the local server by selecting the _Stop_ button above the **local-mcp-server**.
+1. Start the remote server by selecting the _Start_ button above the **remote-mcp-server**.
 1. VS Code will prompt you for the Function App name. Copy it from either the terminal output or the Portal.
-1. VS Code will next prompt you for the Function App key. Copy that from the _default_ key on the **Functions** -> **App keys** page in the Azure portal.
+1. Open Copilot in Agent mode and make sure **remote-mcp-server** is checked in the tool's list.
+1. VS Code should prompt you to authenticate to Microsoft. Click _Allow_, and then login into your Microsoft account (the one used to access Azure Portal).
+1. Ask Copilot "What is the weather in Seattle?". It should call one of the weather tools to help answer.
 
 >[!TIP]
 >In addition to starting an MCP server in _mcp.json_, you can see output of a server by clicking _More..._ -> _Show Output_. The output provides useful information like why a connection might've failed.
+>
+>You can also click the gear icon to change log levels to "Traces" to get even more details on the interactions between the client (VSCode) and the server.
+>
+><img src="./media/log-level.png" width="200" alt="Log level screenshot">
 
-## Server authorization using Azure API Management (APIM)
+### Redeployment
 
-In addition to protecting server access through function keys, you can also add APIM in front of the Function app to add an extra layer of security. This sample leverages APIM's policy feature to redirect a client to authenticate with Entra ID before connecting to the MCP server. Specifically, this is achieved by creating two policies on the APIM resource that follow the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery). One policy checks access tokens from incoming requests, and if validation fails, returns a 404 with header containining the path to Protected Resource Metadata (PRM). Another policy returns the PRM, which a client can use to figure out the authorization server (Entra ID in this case) that provides access tokens to the MCP server.
+If you want to redeploy the server after making changes, there are different options:
 
-To see the above in action, test connecting to the server using the APIM endpoint instead of the Function app endpoint:
+1. Run `azd deploy`. (See azd command [reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference).)
+1. Open command palette in VS Code (`Command+Shift+P/Cntrl+Shift+P`) and search for **Azure Functions: Deploy to Function App**. Then select the name of the function app to deploy to. 
 
-1. Open _mcp.json_ in VS Code
-1. Stop the **remote-mcp-server** or **local-mcp-server** servers if still running
-1. Start the **remote-mcp-server-apim** server
-1. VS Code will prompt you for the APIM resource name
-1. Click **Allow** when a window pops up saying the MCP Server wants to authenticate to Microsoft.
-1. Sign into your Microsoft account to connect to the server  
+## Built-in server authentication with EasyAuth
+
+The server is configured with EasyAuth, which is an integration with Azure Functions that implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery). For example, when a client first connects to the MCP server, it'd get a 401 response with header containining the path to Protected Resource Metadata (PRM). The client can use the PRM's information to locate the identity provider, which is Entra in this case. That's why when connecting to the server, you're prompted to authenticate. Once you do, Entra returns an access token to the client, which uses it in a new call to connect to the server. 
 
 ### Support for other clients
 
-Since Entra ID doesn't provide native support for DCR (Dynamic Client Registration) and PKCE (Proof Key for Code Exchange) today,the above authorization flow is only supported on VS Code. If you use other clients (like Claude or Cursor), the easier option is to access the MCP server using the Function App endpoint and access key. The other option is to try out an [experimental approach](https://github.com/localden/remote-auth-mcp-apim-py/) that provides a workaround, which also leverages APIM.
+Agents in Azure AI Foundry can be configured to leverage the remote MCP server. Docs coming soon. 
 
 ## Clean up resources
 
@@ -167,9 +190,11 @@ The following are some common issues that come up.
 
     This is a [known transient error](https://github.com/Azure/azure-dev/issues/5580). Try re-running `azd up`. 
 
-3. **Selected user account does not exist in tenant '{name}' and cannot access the application '{app ID}' in that tenant. The account needs to be added as an external user in the tenant first.**
+3. **Need admin approval. Visual Studio Code needs permission to access resources in your organization that only an admin can grant. Please ask an admin to grant permission to this app before you can use it.**
 
-    When authenticating to the server using the APIM endpoint, you must log with the email associated with the Azure account and subscription in which your resources are deployed. 
+    This means your Entra app hasn't authorized VS Code as a trusted client. To fix this issue, go to the Azure Portal and search for your Entra app ("MCP Authorization App") in the global search bar. Inside the Entra app resource, click on **Expose an API** in the left menu. Look for the **+ Add a client application** button. Click to add VS Code's Client ID `aebc6443-996d-45c2-90f0-388ff96faa56`, remembering to check the authorized scopes box and click **Add application**:
+
+    <img src="./media/add-vscode-id.png" width="400" alt="Add VS Code client ID screenshot">
 
 4. **[warning] Error populating auth metadata: Error: Failed to fetch authorization server metadata: 401**
 
@@ -178,7 +203,6 @@ The following are some common issues that come up.
 5. **Connection state: Error Error sending message to {endpoint}: TypeError: fetch failed**
     
     - Ensure the Function app name is correct when connecting to the server with the app endpoint.
-    - Ensure the APIM resource name is correct when connecting to the server with the APIM endpoint.
 
 6. **Ensure you have the latest version of Azure Functions Core Tools installed.**
    
