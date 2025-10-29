@@ -196,15 +196,11 @@ The following are some common issues that come up.
 
     <img src="./media/add-vscode-id.png" width="400" alt="Add VS Code client ID screenshot">
 
-4. **[warning] Error populating auth metadata: Error: Failed to fetch authorization server metadata: 401**
-
-    Ensure the Function app access key is correct when connecting to the server with the app endpoint.
-
-5. **Connection state: Error Error sending message to {endpoint}: TypeError: fetch failed**
+4. **Connection state: Error Error sending message to {endpoint}: TypeError: fetch failed**
     
     - Ensure the Function app name is correct when connecting to the server with the app endpoint.
 
-6. **Ensure you have the latest version of Azure Functions Core Tools installed.**
+5. **Ensure you have the latest version of Azure Functions Core Tools installed.**
    
     - You need [version >=4.2.1](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
 
