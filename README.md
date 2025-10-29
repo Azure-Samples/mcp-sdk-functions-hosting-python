@@ -198,7 +198,7 @@ The following are some common issues that come up.
 
 4. **Connection state: Error Error sending message to {endpoint}: TypeError: fetch failed**
     
-    - Ensure the Function app name is correct when connecting to the server with the app endpoint.
+    - Ensure the Function app domain is correct when connecting to the server.
 
 5. **Ensure you have the latest version of Azure Functions Core Tools installed.**
    
