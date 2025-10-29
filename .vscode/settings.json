@@ -1,6 +1,6 @@
 {
     "azureFunctions.deploySubpath": ".",
-    "azureFunctions.projectLanguage": "Custom",
+    "azureFunctions.projectLanguage": "Python",
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen"
 }

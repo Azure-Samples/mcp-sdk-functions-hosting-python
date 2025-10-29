@@ -13,6 +13,15 @@
     },
     "vnetEnabled": {
       "value": "${VNET_ENABLED}"
+    },
+    "serviceManagementReference": {
+      "value": "${SERVICE_MANAGEMENT_REFERENCE}"
+    },
+     "preAuthorizedClientIds": {
+      "value": "${PRE_AUTHORIZED_CLIENT_IDS}"
+    },
+    "tokenExchangeAudience": {
+      "value": "${TOKEN_EXCHANGE_AUDIENCE}"
     }
   }
 }

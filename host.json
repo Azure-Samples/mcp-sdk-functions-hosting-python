@@ -1,16 +1,14 @@
 {
-    "version": "2.0",
-    "extensions": {
-        "http": {
-            "routePrefix": ""
-        }
-    },
+   "version": "2.0",
+    "configurationProfile": "mcp-custom-handler",
     "customHandler": {
         "description": {
             "defaultExecutablePath": "python",
-            "workingDirectory": "",
-            "arguments": ["weather.py"]
+            "arguments": ["weather.py"] 
         },
-        "enableProxyingHttpRequest": true
+        "http": {
+            "DefaultAuthorizationLevel": "anonymous"
+        },
+        "port": "8000"
     }
 }
