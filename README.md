@@ -47,21 +47,23 @@ Ensure you have the following:
 
 Follow these instructions to scaffold your project: 
 
-1. In your MCP project, run `azd init --template mcp-python-scaffold`
-1. [TODO]
-1. In `host.json`, put the main Python script path as the value of `arguments`. 
+1. Inside the MCP server project, run `azd init --template self-hosted-mcp-scaffold-python`. In theory, there shouldn't be any duplicates between files in the scaffold and your original project. Fix duplicates if any by following the prompts. 
+1. In `host.json`:
+  - Put the main Python script path as the value of `arguments`, e.g. `weather.py`
+  - Ensure the `port` value is the same as the one used by the MCP server
+1. Follow instructions starting in the [Test the server locally](#test-the-server-locally) section. 
 
-Once you're done with the above, continue from the [Run the server locally](#run-the-server-locally) section. 
+Find more details about the scaffold in the [scaffold repo](https://github.com/Azure-Samples/self-hosted-mcp-scaffold-python). 
 
 ## If you're starting from scratch...
 
-1. Clone the repo and open the sample in Visual Studio Code
+Clone the repo and open the sample in Visual Studio Code
 
-    ```shell
-    git clone https://github.com/Azure-Samples/mcp-sdk-functions-hosting-python.git
-    ```
+  ```shell
+  git clone https://github.com/Azure-Samples/mcp-sdk-functions-hosting-python.git
+  ```
 
-## Run the server locally
+## Test the server locally
 
 1. In the root directory, run `uv run func start` to create the virtual environment, install dependencies, and start the server locally
 1. Open _mcp.json_ (in the _.vscode_ directory)
@@ -73,7 +75,7 @@ Once you're done with the above, continue from the [Run the server locally](#run
 1. Once the server displays the number of tools available, ask "What is the weather in NYC?" Copilot should call one of the weather tools to help answer this question.
 1. Deactivate the virtual environment
 
-### Register resource provider before deploying
+## Register resource provider before deploying
 
 Before deploying, you need to register the `Microsoft.App` resource provider:
 ```shell
@@ -85,7 +87,7 @@ Wait a few seconds for registration to complete. You can check status by using:
 az provider show -n Microsoft.App
 ```
 
-### Deployment 
+## Deployment 
 
 1. This sample uses Visual Studio Code as the main client. Configure it as an allowed client application:
     ```shell
@@ -140,9 +142,9 @@ If you want to redeploy the server after making changes, there are different opt
 1. Run `azd deploy`. (See azd command [reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference).)
 1. Open command palette in VS Code (`Command+Shift+P/Cntrl+Shift+P`) and search for **Azure Functions: Deploy to Function App**. Then select the name of the function app to deploy to. 
 
-## Built-in server authentication with EasyAuth
+## Built-in server authentication with Easy Auth
 
-The server is configured with EasyAuth, which is an integration with Azure Functions that implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery). For example, when a client first connects to the MCP server, it'd get a 401 response with header containining the path to Protected Resource Metadata (PRM). The client can use the PRM's information to locate the identity provider, which is Entra in this case. That's why when connecting to the server, you're prompted to authenticate. Once you do, Entra returns an access token to the client, which uses it in a new call to connect to the server. 
+The server is configured with [Easy Auth](https://learn.microsoft.com/azure/app-service/overview-authentication-authorization), which is an integration with Azure Functions that implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery). For example, when a client first connects to the MCP server, it'd get a 401 response with header containining the path to Protected Resource Metadata (PRM). The client can use the PRM's information to locate the identity provider, which is Entra in this case. That's why when connecting to the server, you're prompted to authenticate. Once you do, Entra returns an access token to the client, which uses it in a new call to connect to the server. 
 
 ### Support for other clients
 
@@ -203,11 +205,15 @@ The following are some common issues that come up.
 
 4. **Connection state: Error Error sending message to {endpoint}: TypeError: fetch failed**
     
-    - Ensure the Function app domain is correct when connecting to the server.
+    Ensure the Function app domain is correct when connecting to the server.
 
 5. **Ensure you have the latest version of Azure Functions Core Tools installed.**
    
-    - You need [version >=4.2.1](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
+    You need [version >=4.2.1](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
+
+6. **`.vscode/mcp.json` must be in the root for VS Code to detect MCP server registration**
+
+    If you don't see the _Start_ button above server registrations, it's likely because `.vscode/mcp.json` isn't located in the root of your workspace folder.
 
 
 
