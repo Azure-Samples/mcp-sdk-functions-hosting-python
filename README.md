@@ -63,8 +63,9 @@ Once you're done with the above, continue from the [Run the server locally](#run
 1. Open _mcp.json_ (in the _.vscode_ directory)
 1. Start the server by selecting the _Start_ button above the **local-mcp-server**
 1. Click on the Copilot icon at the top to open chat (or `Ctrl+Command+I / Ctrl+Alt+I`), and then change to _Agent_ mode in the question window.
-1. Click the tools icon and make sure **local-mcp-server** is checked for Copilot to use in the chat: 
-  <img src="./media/mcp-tools.png" width="200" alt="MCP tools list screenshot">>
+1. Click the tools icon and make sure **local-mcp-server** is checked for Copilot to use in the chat:
+   
+    <img src="./media/mcp-tools.png" width="200" alt="MCP tools list screenshot">
 1. Once the server displays the number of tools available, ask "What is the weather in NYC?" Copilot should call one of the weather tools to help answer this question.
 1. Deactivate the virtual environment
 
