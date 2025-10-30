@@ -1,4 +1,4 @@
-# Host remote MCP servers built with official MCP SDKs on Azure Functions
+# Host remote MCP servers built with official MCP SDKs on Azure Functions (early preview)
 
 This repo contains instructions and sample for running MCP server built with the Python MCP SDK on Azure Functions. The repo uses the weather sample server to demonstrate how this can be done. You can clone to run and test the server locally, follow by easy deploy with `azd up` to have it in the cloud in a few minutes.
 
@@ -35,11 +35,15 @@ Ensure you have the following:
 * [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript)
 * [Visual Studio Code](https://code.visualstudio.com/)
 * [Azure Functions extension on Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
+* [uv](https://docs.astral.sh/uv/getting-started/installation/)
 
->[!IMPORTANT]
+>[!NOTE]
 >This sample requires that you have permission to create a [Microsoft Entra app](https://docs.azure.cn/entra/fundamentals/what-is-entra) in the Azure subscription you use. 
 
 ## If you already have an existing server... 
+
+>[!IMPORTANT]
+>Your server must be **stateless** and uses the **streamable-http** transport to be hosted remotely on Azure Functions today. 
 
 Follow these instructions to scaffold your project: 
 
