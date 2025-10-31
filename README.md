@@ -17,12 +17,6 @@ For those who have already built servers with [Anthropic's MCP SDKs](https://git
 This repo focuses on the second hosting scenario:  
 
 <div align="center">
-  <img src="./media/weather_server.png" alt="Diagram showing hosting of weather server built with official MCP SDKs." width="500">
-</div>
-
-More generally speaking, you can leverage custom handlers to host apps built with your choice of frameworks and SDKs on Azure Functions:
-
-<div align="center">
   <img src="./media/function_hosting.png" alt="Diagram showing hosting of Function app and custom handler apps." width="500">
 </div>
 
@@ -30,9 +24,9 @@ More generally speaking, you can leverage custom handlers to host apps built wit
 
 Ensure you have the following:
 
-* [Azure subscription](../guides/developer/azure-developer-guide.md#understanding-accounts-subscriptions-and-billing) ([create a free one](https://azure.microsoft.com/free/dotnet/))
-* [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
-* [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript)
+* [Azure subscription](https://azure.microsoft.com/free/dotnet/) (you can create one for free)
+* [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) v1.17.2 or above
+* [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript) v4.5.0 or above
 * [Visual Studio Code](https://code.visualstudio.com/)
 * [Azure Functions extension on Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions)
 * [uv](https://docs.astral.sh/uv/getting-started/installation/)
@@ -45,15 +39,22 @@ Ensure you have the following:
 >[!IMPORTANT]
 >Your server must be **stateless** and uses the **streamable-http** transport to be hosted remotely on Azure Functions today. 
 
-Follow these instructions to scaffold your project: 
+The following instructions will pull in artifacts required for local server testing and deployment. The most important are: `host.json`, `local.settings.json`, and `infra`. Azure Functions only requires the first two JSON files. The `infra` directory isn't a requirement, but it's handy for provisioning Azure resources. 
 
-1. Inside the MCP server project, run `azd init --template self-hosted-mcp-scaffold-python`. In theory, there shouldn't be any duplicates between files in the scaffold and your original project. Fix duplicates if any by following the prompts. 
+It's unlikely that your project would have files and directory with the same names, but if it does, you'll need to rename them so they won't be overwritten.
+
+Once you've done the necessary renaming, follow these steps: 
+1. Inside the MCP server project, run `azd init --template self-hosted-mcp-scaffold-python`.
+1. Answer the prompts
+    - Continue initializing an app in '/your/mcp/project/folder'?: Select Yes. 
+    - Files present both locally and in template: Likely the only one is README, and you can keep the existing. 
+    - Enter a unique environment name: This will become the name of the resource group the server is deployed in.
 1. In `host.json`:
-  - Put the main Python script path as the value of `arguments`, e.g. `weather.py`
-  - Ensure the `port` value is the same as the one used by the MCP server
+    - Put the main Python script path as the value of `arguments`, e.g. `weather.py`
+    - Ensure the `port` value is the same as the one used by the MCP server
 1. Follow instructions starting in the [Test the server locally](#test-the-server-locally) section. 
 
-Find more details about the scaffold in the [scaffold repo](https://github.com/Azure-Samples/self-hosted-mcp-scaffold-python). 
+You can find out more details about the [template](https://github.com/Azure-Samples/self-hosted-mcp-scaffold-python). 
 
 ## If you're starting from scratch...
 
@@ -64,6 +65,8 @@ Clone the repo and open the sample in Visual Studio Code
   ```
 
 ## Test the server locally
+>[!NOTE]
+>Oct 31 2025 update: Running the server locally requires Azure Functions Core Tools v4.5.0, which is not yet released. Skip to [next section](#register-resource-provider-before-deploying) to prepare for deployment.  
 
 1. In the root directory, run `uv run func start` to create the virtual environment, install dependencies, and start the server locally
 1. Open _mcp.json_ (in the _.vscode_ directory)
@@ -99,7 +102,7 @@ az provider show -n Microsoft.App
     azd env set SERVICE_MANAGEMENT_REFERENCE <service-management-reference>
     ```
 
-1. Run `azd up` in the root directory. This command will create and deploy the app, plus other required resources.
+1. Run `azd up` in the root directory. Then pick an Azure subcription to deploy resources to and select from the available regions.
 
     When the deployment finishes, your terminal will display output similar to the following:
 
@@ -120,10 +123,10 @@ az provider show -n Microsoft.App
 
 ### Connect to server on Visual Studio Code
 
-1. Open _mcp.json_ in VS Code.
+1. Open _mcp.json_ in the editor.
 1. Stop the local server by selecting the _Stop_ button above the **local-mcp-server**.
 1. Start the remote server by selecting the _Start_ button above the **remote-mcp-server**.
-1. VS Code will prompt you for the Function App name. Copy it from either the terminal output or the Portal.
+1. Visual Studio Code will prompt you for the Function App name. Copy it from either the terminal output or the Portal.
 1. Open Copilot in Agent mode and make sure **remote-mcp-server** is checked in the tool's list.
 1. VS Code should prompt you to authenticate to Microsoft. Click _Allow_, and then login into your Microsoft account (the one used to access Azure Portal).
 1. Ask Copilot "What is the weather in Seattle?". It should call one of the weather tools to help answer.
@@ -131,7 +134,7 @@ az provider show -n Microsoft.App
 >[!TIP]
 >In addition to starting an MCP server in _mcp.json_, you can see output of a server by clicking _More..._ -> _Show Output_. The output provides useful information like why a connection might've failed.
 >
->You can also click the gear icon to change log levels to "Traces" to get even more details on the interactions between the client (VSCode) and the server.
+>You can also click the gear icon to change log levels to "Traces" to get even more details on the interactions between the client (Visual Studio Code) and the server.
 >
 ><img src="./media/log-level.png" width="200" alt="Log level screenshot">
 
@@ -140,15 +143,27 @@ az provider show -n Microsoft.App
 If you want to redeploy the server after making changes, there are different options:
 
 1. Run `azd deploy`. (See azd command [reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference).)
-1. Open command palette in VS Code (`Command+Shift+P/Cntrl+Shift+P`) and search for **Azure Functions: Deploy to Function App**. Then select the name of the function app to deploy to. 
+1. Open command palette in Visual Studio Code (`Command+Shift+P/Cntrl+Shift+P`) and search for **Azure Functions: Deploy to Function App**. Then select the name of the function app to deploy to. 
 
-## Built-in server authentication with Easy Auth
+## Built-in server authorization with Easy Auth
 
-The server is configured with [Easy Auth](https://learn.microsoft.com/azure/app-service/overview-authentication-authorization), which is an integration with Azure Functions that implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery). For example, when a client first connects to the MCP server, it'd get a 401 response with header containining the path to Protected Resource Metadata (PRM). The client can use the PRM's information to locate the identity provider, which is Entra in this case. That's why when connecting to the server, you're prompted to authenticate. Once you do, Entra returns an access token to the client, which uses it in a new call to connect to the server. 
+The server app is configured with [Easy Auth](https://learn.microsoft.com/azure/app-service/overview-authentication-authorization), which implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery), such as issuing 401 challenge and exposing a Protected Resource Metadata (PRM). 
+
+When the server is configured to use Easy Auth for MCP Server authorization, you should see the following sequence of events in the debug output from Visual Studio Code:
+
+1. The editor sends an initialization request to the MCP server.
+1. The MCP server responds with an error indicating that authorization is required. The response includes a pointer to the protected resource metadata (PRM) for the application. The Easy Auth feature generates the PRM for an app built with this sample.
+1. The editor fetches the PRM and uses it to identify the authorization server.
+1. The editor attempts to obtain authorization server metadata (ASM) from a well-known endpoint on the authorization server.
+1. Microsoft Entra ID doesn't support ASM on the well-known endpoint, so the editor falls back to using the OpenID Connect metadata endpoint to obtain the ASM. It tries to discover this using by inserting the well-known endpoint before any other path information.
+1. The OpenID Connect specifications actually defined the well-known endpoint as being after path information, and that is where Microsoft Entra ID hosts it. So the editor tries again with that format.
+1. The editor successfully retrieves the ASM. It then can then use this information in conjunction with its own client ID to perform a login. At this point, the editor prompts you to sign in and consent to the application.
+1. Assuming you successfully sign in and consent, the editor completes the login. It repeats the intialization request to the MCP server, this time including an authorization token in the request. This reattempt isn't visible at the Debug output level, but you can see it in the Trace output level.
+1. The MCP server validates the token and responds with a successful response to the initialization request. The standard MCP flow continues from this point, ultimately resulting in discovery of the MCP tool defined in this sample.
 
 ### Support for other clients
 
-Agents in Azure AI Foundry can be configured to leverage the remote MCP server. Docs coming soon. 
+Other than Visual Studio Code, agents in Azure AI Foundry can also connect to Function-hosted MCP servers that are configured with Easy Auth. Docs coming soon. 
 
 ## Clean up resources
 
@@ -166,7 +181,6 @@ When you're done working with your server, you can use this command to delete th
 |------------------|---------------|
 | C# (.NET) | [mcp-sdk-functions-hosting-dotnet](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-dotnet) |
 | Node | [mcp-sdk-functions-hosting-node](https://github.com/Azure-Samples/mcp-sdk-functions-hosting-node) |
-
 
 ## Troubleshooting 
 The following are some common issues that come up. 
@@ -209,7 +223,7 @@ The following are some common issues that come up.
 
 5. **Ensure you have the latest version of Azure Functions Core Tools installed.**
    
-    You need [version >=4.2.1](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
+    You need [version >=4.4.0](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
 
 6. **`.vscode/mcp.json` must be in the root for VS Code to detect MCP server registration**
 

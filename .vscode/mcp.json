@@ -1,10 +1,10 @@
 {
 	    "servers": {
-        "local-mcp-function": {
+        "local-mcp-server": {
             "type": "http",
             "url": "http://localhost:7071/mcp"
         },
-        "remote-mcp-function": {
+        "remote-mcp-server": {
             "type": "http",
             "url": "https://${input:functionapp-domain}/mcp",
         }
