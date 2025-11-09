@@ -66,7 +66,7 @@ Clone the repo and open the sample in Visual Studio Code
 
 ## Test the server locally
 >[!NOTE]
->Oct 31 2025 update: Running the server locally requires Azure Functions Core Tools v4.5.0, which is not yet released. Skip to [next section](#register-resource-provider-before-deploying) to prepare for deployment.  
+>Oct 31 2025 update: Running the server locally requires Azure Functions Core Tools v4.5.0, which is in the process of releasing. Skip to [next section](#register-resource-provider-before-deploying) to prepare for deployment for now.  
 
 1. In the root directory, run `uv run func start` to create the virtual environment, install dependencies, and start the server locally
 1. Open _mcp.json_ (in the _.vscode_ directory)
@@ -145,20 +145,20 @@ If you want to redeploy the server after making changes, there are different opt
 1. Run `azd deploy`. (See azd command [reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference).)
 1. Open command palette in Visual Studio Code (`Command+Shift+P/Cntrl+Shift+P`) and search for **Azure Functions: Deploy to Function App**. Then select the name of the function app to deploy to. 
 
-## Built-in server authorization with Easy Auth
+## Built-in server authentication and authorization 
 
-The server app is configured with [Easy Auth](https://learn.microsoft.com/azure/app-service/overview-authentication-authorization), which implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery), such as issuing 401 challenge and exposing a Protected Resource Metadata (PRM). 
+The server app is configured with the built-in server authentication and authorization feature, which implements the requirements of the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization#authorization-server-discovery), such as issuing 401 challenge and exposing a Protected Resource Metadata (PRM). 
 
-When the server is configured to use Easy Auth for MCP Server authorization, you should see the following sequence of events in the debug output from Visual Studio Code:
+In the debug output from Visual Studio Code, you see a series of requests and responses as the MCP client and server interact. When built-in MCP server authorization is used, you should see the following sequence of events:
 
 1. The editor sends an initialization request to the MCP server.
-1. The MCP server responds with an error indicating that authorization is required. The response includes a pointer to the protected resource metadata (PRM) for the application. The Easy Auth feature generates the PRM for an app built with this sample.
+1. The MCP server responds with an error indicating that authorization is required. The response includes a pointer to the protected resource metadata (PRM) for the application. The built-in authorization feature generates the PRM for the server app.
 1. The editor fetches the PRM and uses it to identify the authorization server.
 1. The editor attempts to obtain authorization server metadata (ASM) from a well-known endpoint on the authorization server.
 1. Microsoft Entra ID doesn't support ASM on the well-known endpoint, so the editor falls back to using the OpenID Connect metadata endpoint to obtain the ASM. It tries to discover this using by inserting the well-known endpoint before any other path information.
 1. The OpenID Connect specifications actually defined the well-known endpoint as being after path information, and that is where Microsoft Entra ID hosts it. So the editor tries again with that format.
-1. The editor successfully retrieves the ASM. It then can then use this information in conjunction with its own client ID to perform a login. At this point, the editor prompts you to sign in and consent to the application.
-1. Assuming you successfully sign in and consent, the editor completes the login. It repeats the intialization request to the MCP server, this time including an authorization token in the request. This reattempt isn't visible at the Debug output level, but you can see it in the Trace output level.
+1. The editor successfully retrieves the ASM. It then uses this information in conjunction with its own client ID to perform a login. At this point, the editor prompts you to sign in and consent to the application.
+1. Assuming you successfully sign in and consent, the editor completes the login. It repeats the intialization request to the MCP server, this time including an authorization token in the request. This re-attempt isn't visible at the Debug output level, but you can see it in the Trace output level.
 1. The MCP server validates the token and responds with a successful response to the initialization request. The standard MCP flow continues from this point, ultimately resulting in discovery of the MCP tool defined in this sample.
 
 ### Support for other clients
@@ -223,7 +223,7 @@ The following are some common issues that come up.
 
 5. **Ensure you have the latest version of Azure Functions Core Tools installed.**
    
-    You need [version >=4.4.0](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
+    You need [version >=4.5.0](https://learn.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-typescript). Check by running `func --version`.
 
 6. **`.vscode/mcp.json` must be in the root for VS Code to detect MCP server registration**
 
