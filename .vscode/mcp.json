@@ -1,19 +1,19 @@
 {
-	    "servers": {
-        "local-mcp-server": {
-            "type": "http",
-            "url": "http://localhost:7071/mcp"
-        },
-        "remote-mcp-server": {
-            "type": "http",
-            "url": "https://${input:functionapp-domain}/mcp",
-        }
-    },
-    "inputs": [
-        {
-            "type": "promptString",
-            "id": "functionapp-domain",
-            "description": "The domain of the function app."
-        }
-    ]
+	"servers": {
+		"local-mcp-server": {
+			"type": "http",
+			"url": "http://localhost:7071/mcp"
+		},
+		"remote-mcp-server": {
+			"type": "http",
+			"url": "https://${input:functionapp-domain}/mcp"
+		}
+	},
+	"inputs": [
+		{
+			"type": "promptString",
+			"id": "functionapp-domain",
+			"description": "The domain of the function app."
+		}
+	]
 }
