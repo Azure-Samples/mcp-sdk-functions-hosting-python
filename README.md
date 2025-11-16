@@ -1,6 +1,11 @@
 # Host remote MCP servers built with official MCP SDKs on Azure Functions (early preview)
 
-This repo contains instructions and sample for running MCP server built with the Python MCP SDK on Azure Functions. The repo uses the weather sample server to demonstrate how this can be done. You can clone to run and test the server locally, follow by easy deploy with `azd up` to have it in the cloud in a few minutes.
+This repo contains instructions and sample for running MCP server built with the Python MCP SDK on Azure Functions. The repo includes two sample servers:
+
+1. **Weather Server** (`weather.py`): Demonstrates basic MCP tools for getting weather forecasts and alerts
+2. **Get User Server** (`get_user.py`): Demonstrates On-Behalf-Of (OBO) flow for calling Microsoft Graph API to retrieve logged-in user information
+
+You can clone to run and test the servers locally, then easily deploy with `azd up` to have them in the cloud in a few minutes.
 
 **Watch the video overview**
 
@@ -164,6 +169,52 @@ In the debug output from Visual Studio Code, you see a series of requests and re
 ### Support for other clients
 
 Other than Visual Studio Code, agents in Azure AI Foundry can also connect to Function-hosted MCP servers that are configured with Easy Auth. Docs coming soon. 
+
+## Demonstrating On-Behalf-Of (OBO) Flow
+
+The `get_user.py` server demonstrates how to implement the On-Behalf-Of (OBO) flow to call Microsoft Graph API on behalf of the authenticated user. This pattern is useful when your MCP tools need to access user-specific data from Microsoft Graph or other protected APIs.
+
+### How the OBO Flow Works
+
+1. **User Authentication**: Azure App Service authentication validates the user and forwards the bearer token in the `Authorization` header
+2. **Token Extraction**: The MCP tool extracts the bearer token from the request headers
+3. **Managed Identity Assertion**: A Managed Identity credential obtains an assertion token for token exchange
+4. **Token Exchange**: `OnBehalfOfCredential` exchanges the user's token for a Microsoft Graph access token
+5. **API Call**: The tool calls Microsoft Graph's `/me` endpoint with the exchanged token
+6. **Response**: User information is returned with sensitive fields masked for security
+
+### Using the Get User Tool
+
+To use the `get_user.py` server:
+
+1. Update `host.json` to point to `get_user.py` instead of `weather.py`:
+   ```json
+   {
+      "version": "2.0",
+       "configurationProfile": "mcp-custom-handler",
+       "customHandler": {
+           "description": {
+               "defaultExecutablePath": "python",
+               "arguments": ["get_user.py"] 
+           },
+           "http": {
+               "DefaultAuthorizationLevel": "anonymous"
+           },
+           "port": "8000"
+       }
+   }
+   ```
+
+2. Deploy the application following the deployment steps above
+
+3. The infrastructure is already configured to support OBO flow with:
+   - Entra app registration with Microsoft Graph permissions
+   - Federated identity credential for managed identity
+   - Required environment variables for token exchange
+
+4. Once deployed, use the `get_current_user` tool to retrieve the logged-in user's information from Microsoft Graph
+
+**Note**: This tool requires the infrastructure to be deployed to Azure as it relies on Azure App Service authentication and Managed Identity. It will not work in local development without additional configuration.
 
 ## Clean up resources
 
