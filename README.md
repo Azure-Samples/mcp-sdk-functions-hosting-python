@@ -1,6 +1,8 @@
 # Host remote MCP servers built with official MCP SDKs on Azure Functions (early preview)
 
-This repo contains instructions and sample for running MCP server built with the Python MCP SDK on Azure Functions. The repo uses the weather sample server to demonstrate how this can be done. You can clone to run and test the server locally, follow by easy deploy with `azd up` to have it in the cloud in a few minutes.
+This repo contains instructions and sample for running MCP server built with the Python MCP SDK on Azure Functions. The repo include a sample server demonstrate various MCP tools. 
+
+You can clone to run and test the servers locally, then easily deploy with `azd up` to have them in the cloud in a few minutes.
 
 **Watch the video overview**
 
@@ -39,15 +41,15 @@ Ensure you have the following:
 >[!IMPORTANT]
 >Your server must be **stateless** and uses the **streamable-http** transport to be hosted remotely on Azure Functions today. 
 
-The following instructions will pull in artifacts required for local server testing and deployment. The most important are: `host.json`, `local.settings.json`, and `infra`. Azure Functions only requires the first two JSON files. The `infra` directory isn't a requirement, but it's handy for provisioning Azure resources. 
+The following instructions will pull in artifacts required for local server testing and deployment. The most important are: `host.json`, `local.settings.json`, and `infra`. Azure Functions only requires the first two JSON files. The `infra` directory isn't a requirement, but it's handy for provisioning and deploying the server.
 
 It's unlikely that your project would have files and directory with the same names, but if it does, you'll need to rename them so they won't be overwritten.
 
 Once you've done the necessary renaming, follow these steps: 
 1. Inside the MCP server project, run `azd init --template self-hosted-mcp-scaffold-python`.
 1. Answer the prompts
-    - Continue initializing an app in '/your/mcp/project/folder'?: Select Yes. 
-    - Files present both locally and in template: Likely the only one is README, and you can keep the existing. 
+    - Continue initializing an app in '/your/mcp/project/folder'?: Select **Yes**. 
+    - Files present both locally and in template: Likely the only one is README, and you can keep your existing. 
     - Enter a unique environment name: This will become the name of the resource group the server is deployed in.
 1. In `host.json`:
     - Put the main Python script path as the value of `arguments`, e.g. `weather.py`
@@ -71,6 +73,7 @@ Clone the repo and open the sample in Visual Studio Code
 1. Start the server by selecting the _Start_ button above the **local-mcp-server**
 1. Click on the Copilot icon at the top to open chat (or `Ctrl+Command+I / Ctrl+Alt+I`), and then change to _Agent_ mode in the question window.
 1. Click the tools icon and make sure **local-mcp-server** is checked for Copilot to use in the chat:
+
     <img src="./media/mcp-tools.png" width="200" alt="MCP tools list screenshot">
 1. Once the server displays the number of tools available, ask "Return the weather in NYC using #local-mcp-server" Copilot should call one of the weather tools to help answer this question.
 1. Deactivate the virtual environment
@@ -78,7 +81,7 @@ Clone the repo and open the sample in Visual Studio Code
 >[!NOTE]
 >When the server starts locally, the Azure Functions host first pings the root (`/`) to ensure the app is up and running. Since the root isn't implemented, a 404 is returned. 
 >
->Info logs coming from the MCP SDK may be writte to stderr by default, which is why they appear red in Azure Functions.
+>Info logs coming from the MCP SDK may be written to stderr by default, which is why they appear red in Azure Functions.
 
 ## Register resource provider before deploying
 
@@ -139,6 +142,23 @@ az provider show -n Microsoft.App
 >You can also click the gear icon to change log levels to "Traces" to get even more details on the interactions between the client (Visual Studio Code) and the server.
 >
 ><img src="./media/log-level.png" width="200" alt="Log level screenshot">
+
+## Demonstrating On-Behalf-Of (OBO) Flow
+
+The `get_user_info` tool demonstrates how to implement the On-Behalf-Of (OBO) flow to call Microsoft Graph API on behalf of the authenticated user. This pattern is useful when your MCP tools need to access downstream services.
+
+To test this tool, ask Copilot a question like "Use #remote-mcp-server to provide info abou the logged-in user". Copilot will ask you to provide consent to access the user's information by giving you a link. Navigate to the consent URL and grant the permissions. Then re-ask the question to Copilot. 
+
+### How the OBO Flow Works
+
+1. **Server Authentication**: Built-in authentication feature validates the user and forwards the bearer token in the `Authorization` header
+2. **Token Extraction**: The MCP tool extracts the bearer token from the request headers
+3. **Managed Identity Assertion**: A Managed Identity credential obtains an assertion token for token exchange
+4. **Token Exchange**: `OnBehalfOfCredential` exchanges the bearer token for a Microsoft Graph access token
+5. **API Call**: The tool calls Microsoft Graph's `/me` endpoint with the exchanged token
+6. **Response**: User information is returned 
+
+**Note**: This tool requires the infrastructure to be deployed to Azure. It will not work in local development without additional configuration.
 
 ### Redeployment
 
