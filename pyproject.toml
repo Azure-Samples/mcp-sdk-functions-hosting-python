@@ -1,10 +1,12 @@
 [project]
-name = "20250918-python-uv-byo-weather-mcp"
+name = "mcp-sdk-functions-hosting-python"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sample FastMCP server hosted on Azure Functions"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.28.1",
     "mcp[cli]>=1.14.1",
+    "azure-identity",
+    "fastmcp"
 ]

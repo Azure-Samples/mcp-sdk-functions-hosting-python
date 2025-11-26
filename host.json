@@ -4,7 +4,7 @@
     "customHandler": {
         "description": {
             "defaultExecutablePath": "python",
-            "arguments": ["weather.py"] 
+            "arguments": ["server.py"] 
         },
         "http": {
             "DefaultAuthorizationLevel": "anonymous"
