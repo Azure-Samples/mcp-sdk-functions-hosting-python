@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 import logging
 from typing import Any
 from pathlib import Path
@@ -14,9 +15,11 @@ from starlette.responses import HTMLResponse
 # Reduce MCP SDK, uvicorn, and httpx logging verbosity
 logging.getLogger("mcp").setLevel(logging.WARNING)
 logging.getLogger("uvicorn").setLevel(logging.WARNING)
-logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
-logging.getLogger("uvicorn.error").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
+
+# Suppress websockets deprecation warnings from uvicorn (not using WebSockets anyways)
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="websockets.legacy")
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="uvicorn.protocols.websockets")
 
 # Initialize FastMCP server
 mcp = FastMCP("weather", stateless_http=True)
@@ -109,10 +112,7 @@ Forecast: {period['detailedForecast']}
 @mcp.tool()
 async def get_user_info() -> str:
     """
-    Demonstrate extracting the bearer token (for OBO flow) from the incoming Authorization header.
-
-    Args:
-        authorization: Authorization header value that gets passed from the MCP client when it calls this tool
+    Demonstrate extracting the bearer token from the incoming Authorization header to exchange for Graph API token.
 
     Returns:
         String with user info or error message.
