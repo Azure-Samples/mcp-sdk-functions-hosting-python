@@ -160,7 +160,7 @@ module mcp './app/mcp.bicep' = {
       AzureWebJobsFeatureFlags: 'EnableMcpCustomHandlerPreview'
     }
     virtualNetworkSubnetId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
-    // Authorization parameters (only when Entra ID auth is enabled)
+    // Authorization parameters (only when built-in MCP auth is enabled)
     authClientId: useBuiltInMcpAuth ? entraApp.outputs.applicationId : ''
     authIdentifierUri: useBuiltInMcpAuth ? entraApp.outputs.identifierUri : ''
     authExposedScopes: useBuiltInMcpAuth ? entraApp.outputs.exposedScopes : []
@@ -279,7 +279,7 @@ output SERVICE_MCP_NAME string = mcp.outputs.SERVICE_MCP_NAME
 output SERVICE_MCP_DEFAULT_HOSTNAME string = mcp.outputs.SERVICE_MCP_DEFAULT_HOSTNAME
 output AZURE_FUNCTION_NAME string = mcp.outputs.SERVICE_MCP_NAME
 
-// Entra App outputs (only when Entra ID auth is enabled)
+// Entra App outputs (using the initial app for core properties)
 output ENTRA_APPLICATION_ID string = useBuiltInMcpAuth ? entraApp.outputs.applicationId : ''
 output ENTRA_APPLICATION_OBJECT_ID string = useBuiltInMcpAuth ? entraApp.outputs.applicationObjectId : ''
 output ENTRA_SERVICE_PRINCIPAL_ID string = useBuiltInMcpAuth ? entraApp.outputs.servicePrincipalId : ''
