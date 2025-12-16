@@ -17,6 +17,9 @@ param delegatedPermissions array = ['User.Read']
 @description('Token exchange audience for sovereign cloud deployments (optional)')
 param tokenExchangeAudience string = ''
 
+@description('If set to true, enables anonymous access to the MCP server')
+param anonymousServerAuth string = '' 
+
 @minLength(1)
 @description('Primary location for all resources & Flex Consumption Function App')
 @allowed([
@@ -59,6 +62,7 @@ param tokenExchangeAudience string = ''
   }
 })
 param location string
+
 param vnetEnabled bool = true // Enable VNet by default
 param mcpServiceName string = ''
 param apiUserAssignedIdentityName string = ''
@@ -76,6 +80,7 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 var tags = { 'azd-env-name': environmentName }
 var functionAppName = !empty(mcpServiceName) ? mcpServiceName : '${abbrs.webSitesFunctions}mcp-${resourceToken}'
 var deploymentStorageContainerName = 'app-package-${take(functionAppName, 32)}-${take(toLower(uniqueString(functionAppName, resourceToken)), 7)}'
+var useBuiltInMcpAuth = toLower(anonymousServerAuth) != 'true'
 
 // Convert comma-separated string to array for pre-authorized client IDs
 var preAuthorizedClientIdsArray = !empty(preAuthorizedClientIds) ? map(split(preAuthorizedClientIds, ','), clientId => trim(clientId)) : []
@@ -116,7 +121,7 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
 }
 
 // Entra ID application registration for MCP authentication (with predictable hostname)
-module entraApp 'app/entra.bicep' = {
+module entraApp 'app/entra.bicep' = if (useBuiltInMcpAuth) {
   name: 'entraApp'
   scope: rg
   params: {
@@ -155,11 +160,11 @@ module mcp './app/mcp.bicep' = {
       AzureWebJobsFeatureFlags: 'EnableMcpCustomHandlerPreview'
     }
     virtualNetworkSubnetId: vnetEnabled ? serviceVirtualNetwork.outputs.appSubnetID : ''
-    // Authorization parameters
-    authClientId: entraApp.outputs.applicationId
-    authIdentifierUri: entraApp.outputs.identifierUri
-    authExposedScopes: entraApp.outputs.exposedScopes
-    authTenantId: tenant().tenantId
+    // Authorization parameters (only when Entra ID auth is enabled)
+    authClientId: useBuiltInMcpAuth ? entraApp.outputs.applicationId : ''
+    authIdentifierUri: useBuiltInMcpAuth ? entraApp.outputs.identifierUri : ''
+    authExposedScopes: useBuiltInMcpAuth ? entraApp.outputs.exposedScopes : []
+    authTenantId: useBuiltInMcpAuth ? tenant().tenantId : ''
     delegatedPermissions: delegatedPermissions
     tokenExchangeAudience: tokenExchangeAudience
   }
@@ -274,11 +279,11 @@ output SERVICE_MCP_NAME string = mcp.outputs.SERVICE_MCP_NAME
 output SERVICE_MCP_DEFAULT_HOSTNAME string = mcp.outputs.SERVICE_MCP_DEFAULT_HOSTNAME
 output AZURE_FUNCTION_NAME string = mcp.outputs.SERVICE_MCP_NAME
 
-// Entra App outputs (using the initial app for core properties)
-output ENTRA_APPLICATION_ID string = entraApp.outputs.applicationId
-output ENTRA_APPLICATION_OBJECT_ID string = entraApp.outputs.applicationObjectId
-output ENTRA_SERVICE_PRINCIPAL_ID string = entraApp.outputs.servicePrincipalId
-output ENTRA_IDENTIFIER_URI string = entraApp.outputs.identifierUri
+// Entra App outputs (only when Entra ID auth is enabled)
+output ENTRA_APPLICATION_ID string = useBuiltInMcpAuth ? entraApp.outputs.applicationId : ''
+output ENTRA_APPLICATION_OBJECT_ID string = useBuiltInMcpAuth ? entraApp.outputs.applicationObjectId : ''
+output ENTRA_SERVICE_PRINCIPAL_ID string = useBuiltInMcpAuth ? entraApp.outputs.servicePrincipalId : ''
+output ENTRA_IDENTIFIER_URI string = useBuiltInMcpAuth ? entraApp.outputs.identifierUri : ''
 
 // Authorization outputs
 output AUTH_ENABLED bool = mcp.outputs.AUTH_ENABLED
@@ -287,6 +292,9 @@ output CONFIGURED_SCOPES string = mcp.outputs.CONFIGURED_SCOPES
 // Pre-authorized applications
 output PRE_AUTHORIZED_CLIENT_IDS string = preAuthorizedClientIds
 
-// Entra App redirect URI outputs (using predictable hostname)
-output CONFIGURED_REDIRECT_URIS array = entraApp.outputs.configuredRedirectUris
-output AUTH_REDIRECT_URI string = entraApp.outputs.authRedirectUri
+// Entra App redirect URI outputs (using predictable hostname, only when Entra ID auth is enabled)
+output CONFIGURED_REDIRECT_URIS array = useBuiltInMcpAuth ? entraApp.outputs.configuredRedirectUris : []
+output AUTH_REDIRECT_URI string = useBuiltInMcpAuth ? entraApp.outputs.authRedirectUri : ''
+
+// Anonymous server auth
+output ANONYMOUS_SERVER_AUTH string = anonymousServerAuth
