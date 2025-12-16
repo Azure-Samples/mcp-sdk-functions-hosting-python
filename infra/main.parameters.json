@@ -22,6 +22,9 @@
     },
     "tokenExchangeAudience": {
       "value": "${TOKEN_EXCHANGE_AUDIENCE}"
+    },
+    "anonymousServerAuth": {
+      "value": "${ANONYMOUS_SERVER_AUTH}"
     }
   }
 }
