@@ -131,7 +131,7 @@ az provider show -n Microsoft.App
 1. Open _mcp.json_ in the editor.
 1. Stop the local server by selecting the _Stop_ button above the **local-mcp-server**.
 1. Start the remote server by selecting the _Start_ button above the **remote-mcp-server**.
-1. Visual Studio Code will prompt you for the Function App name. Copy it from either the terminal output or the Portal.
+1. Visual Studio Code will prompt you for the Function App domain. Copy it from either the terminal output or the Portal.
 1. Open Copilot in Agent mode and make sure **remote-mcp-server** is checked in the tool's list.
 1. VS Code should prompt you to authenticate to Microsoft. Click _Allow_, and then login into your Microsoft account (the one used to access Azure Portal).
 1. Ask Copilot "Return the weather in Seattle using #remote-mcp-server". It should call one of the weather tools to help answer.
